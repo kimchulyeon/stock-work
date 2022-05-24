@@ -1,0 +1,134 @@
+{
+  "signup": [
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "id": 1
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "token": 123,
+      "id": 2
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "token": 123,
+      "id": 3
+    },
+    {
+      "username": "test123@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "token": 123,
+      "id": 4
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "token": 123,
+      "id": 5
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "token": 123,
+      "id": 6
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "token": 123,
+      "id": 7
+    },
+    {
+      "username": "",
+      "password": "",
+      "nickname": "",
+      "token": 123,
+      "id": 8
+    }
+  ],
+  "login": [
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "nickname": "test123",
+      "id": 1,
+      "token": "123"
+    },
+    {
+      "username": "",
+      "password": "",
+      "id": 2
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 3
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 4
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 5
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 6
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 7
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 8
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 9
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 10
+    },
+    {
+      "username": "",
+      "password": "",
+      "token": 123,
+      "id": 11
+    },
+    {
+      "username": "test@test.com",
+      "password": "123",
+      "token": 123,
+      "id": 12
+    }
+  ],
+  "posts": []
+}
