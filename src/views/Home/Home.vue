@@ -1,11 +1,14 @@
 <template>
-  <div>
-    <h1>WELCOME HOME</h1>
-  </div>
+  <div>home</div>
 </template>
 
 <script>
-export default {};
+export default {
+  components: {},
+  data() {
+    return {};
+  },
+};
 </script>
 
 <style lang="scss" scoped></style>

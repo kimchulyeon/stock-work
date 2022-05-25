@@ -12,8 +12,10 @@
     </header>
     <!-- BODY -->
     <div class="chart-container">
-      <LightWeightChart />
-      <!-- CHART 자리 -->
+      <!-- LIGHTWEIGHT 차트 -->
+      <!-- @update-price="updatePrice" -->
+      <!-- :quote-name="quoteName" -->
+      <LightWeightChart :base-name="baseName" timeframe="1m" :key="baseName" />
       <!-- CHART INFO TABLE -->
       <table>
         <thead>
@@ -69,7 +71,18 @@ export default {
   components: { LightWeightChart },
 
   data() {
-    return {};
+    return {
+      baseName: "UNIUSDT",
+      quoteName: "CTKUSDT",
+      price: 0,
+    };
+  },
+  methods: {
+    updateCharts(symbol) {
+      this.baseName = symbol;
+
+      console.log(`Update ${symbol}`);
+    },
   },
 };
 </script>
@@ -121,7 +134,7 @@ table {
   border: 1px solid rgba(128, 128, 128, 0.505);
   border-collapse: collapse;
   text-align: center;
-  margin-top: 10px;
+  margin-top: 50px;
 
   thead {
     background-color: rgba(128, 128, 128, 0.783);

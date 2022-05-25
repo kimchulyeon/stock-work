@@ -1,185 +1,172 @@
 <template>
   <div>
-    <div class="chart"></div>
-    <div class="test">{{ finalData }}</div>
+    <div class="chart" ref="chart"></div>
   </div>
 </template>
 
 <script>
-import { createChart } from "lightweight-charts";
+import { createChart, CrosshairMode } from "lightweight-charts";
 import axios from "axios";
-import unixTime from "@/utils/unixtimeConvertor";
 
 export default {
+  props: ["baseName", "timeframe"],
+
   data() {
     return {
-      today: new Date(+new Date() + 3240 * 10000)
-        .toISOString()
-        .replace("T", " ")
-        .replace(/\..*/, ""),
-      data: null,
-      websocket: null,
-      requestCoinList: ["KRW-BTC"],
-      requestList: [],
-      finalData: {},
-      candlestickSeries: null,
-      axiosData: [],
+      chart: null,
+      cdata_price: [],
+      binanceSocket: null,
+      lastBaseKline: {
+        o: 0,
+        c: 0,
+        h: 0,
+        l: 0,
+        t: 0,
+      },
     };
   },
   methods: {
-    pollPear() {
+    makeChart() {
+      this.chart = createChart(this.$refs.chart, {
+        height: 500,
+        // 마우스 포인터 자석 / 자유 모드
+        crosshair: {
+          mode: CrosshairMode.Normal,
+        },
+        // 차트 가로 세로 그리드 (안보이게 설정)
+        grid: {
+          vertLines: {
+            color: "rgba(70, 130, 180, 0.5)",
+            style: 1,
+            visible: false,
+          },
+          horzLines: {
+            color: "rgba(70, 130, 180, 0.5)",
+            style: 1,
+            visible: false,
+          },
+        },
+        priceScale: {
+          borderColor: "rgba(197, 203, 206, 0.8)",
+        },
+        timeScale: {
+          borderColor: "rgba(197, 203, 206, 0.8)",
+          timeVisible: true,
+          secondsVisible: false,
+        },
+      });
+    },
+
+    setChartData(candleSeries) {
       axios
+        // 주식 봉 데이터 가져오기
+        // symbol: 코인 심볼, interval: 봉 데이터 시간 (분봉, 1시간봉...)
         .get(
-          `https://api.upbit.com/v1/candles/days?market=KRW-BTC&count=10&to=${this.today}`
+          `https://api.binance.com/api/v3/klines?symbol=${this.baseName.toUpperCase()}&interval=${
+            this.timeframe
+          }`
         )
         .then((res) => {
-          // console.log(`엑시오스 데이터 ::::::::${JSON.stringify(res.data)}`);
-          // res.data.forEach((item) => {
-          //   const result = {
-          //     time: unixTime(item.timestamp),
-          //     open: Number(item.opening_price).toFixed(2),
-          //     high: Number(item.high_price).toFixed(2),
-          //     low: Number(item.low_price).toFixed(2),
-          //     close: Number(item.trade_price).toFixed(2),
-          //   };
-          //   this.axiosData.push(result);
-          // });
-          // console.log(this.axiosData);
-          // this.axiosData.shift();
-          // this.axiosData.shift();
-          // console.log(this.axiosData);
-          // this.axiosData = result;
+          // console.log(res);
+          res.data.forEach((item) => {
+            // cdata_price라는 빈배열에 원하는 데이터 정제해서 푸시
+            this.cdata_price.push({
+              time: item[0] / 1000 + 32400, // 한국시간 GMT + 9
+              open: item[1] * 1261.1, // USDT => KRW
+              high: item[2] * 1261.1, // USDT => KRW
+              low: item[3] * 1261.1, // USDT => KRW
+              close: item[4] * 1261.1, // USDT => KRW
+            });
+          });
+          // 실시간이 아닌 데이터를 설정
+          candleSeries.setData(this.cdata_price);
         });
-    },
-  },
-  // 컴포넌트가 만들어지자마자 실행
-  created() {
-    const URI = "wss://api.upbit.com/websocket/v1";
-    this.websocket = new WebSocket(URI);
-    this.websocket.binaryType = "arraybuffer";
 
-    // opOpen
-    this.websocket.onopen = () => {
-      console.log("웹소켓이 열렸다::::::::::");
-      this.requestList = [
-        {
-          ticket: "TEST",
-        },
-        {
-          type: "ticker",
-          codes: this.requestCoinList,
-          isOnlyRealtime: true,
-        },
-      ];
+      // 웹소켓 생성
+      this.binanceSocket = new WebSocket(
+        `wss://fstream.binance.com/stream?streams=${this.baseName.toLowerCase()}@kline_${
+          this.timeframe
+        }`
+      );
 
-      const requestMessage = JSON.stringify(this.requestList);
-      this.websocket.send(requestMessage);
-    };
-
-    // onMessage
-    this.websocket.onmessage = (event) => {
-      console.log("코인 가격 바뀌는 중::::::::::");
-
-      var enc = new TextDecoder("utf-8");
-      var arr = new Uint8Array(event.data);
-
-      const result = enc.decode(arr);
-      // JSON 형태로 변환
-      const parsedResult = JSON.parse(result);
-      console.log(`결과다:::::::::${parsedResult}`);
-
-      this.finalData = {
-        time: unixTime(parsedResult.timestamp),
-        open: Number(parsedResult.opening_price).toFixed(2),
-        high: Number(parsedResult.high_price).toFixed(2),
-        low: Number(parsedResult.low_price).toFixed(2),
-        close: Number(parsedResult.trade_price).toFixed(2),
+      this.binanceSocket.onopen = () => {
+        console.log("웹소켓 연결...");
       };
-      // console.log(`결과다:::::::::${this.finalData}`);
+      this.binanceSocket.onmessage = (event) => {
+        try {
+          let kline = JSON.parse(event.data);
+          // console.log(`클리네가 무엇??::::${event.data}`);
+          if (kline.data.s === this.baseName.toUpperCase()) {
+            this.lastBaseKline = kline.data.k;
+          }
+          // if (kline.data.s === this.quoteName.toUpperCase()) {
+          //   this.lastQuoteKline = kline.data.k;
+          // }
 
-      // TODO: 여기가 문제 데이터를 정제해야함
-      this.candlestickSeries.update(this.finalData);
-    };
+          if (this.lastBaseKline.c !== 0) {
+            candleSeries.update({
+              time: this.lastBaseKline.t / 1000 + 32400,
+              open: this.lastBaseKline.o * 1261.1,
+              close: this.lastBaseKline.c * 1261.1,
+              high: this.lastBaseKline.h * 1261.1,
+              low: this.lastBaseKline.l * 1261.1,
+            });
+          }
+        } catch (e) {
+          console.log(e);
+        }
+      };
+      this.binanceSocket.onclose = () => {
+        console.log("웹소켓 연결 해제...");
+      };
+
+      this.binanceSocket.onerror = function (evt) {
+        console.log("웹소켓 에러남.....");
+        console.log(evt);
+      };
+    },
+
+    resize(width) {
+      this.chart.resize(width);
+    },
   },
 
   // 컴포넌트가 마운트 되었을 때 실행
   mounted() {
-    this.pollPear();
-    // .chart 요소에 차트 생성
-    const chart = createChart(document.querySelector(".chart"), {
-      width: 900,
-      height: 300,
-    });
-    // cdndlestickSeries라는 주식 차트 생성
-    this.candlestickSeries = chart.addCandlestickSeries();
-
-    this.candlestickSeries.setData([
-      {
-        time: "2022-05-16",
-        open: 37209000.0,
-        high: 37209000.0,
-        low: 37203000.0,
-        close: 37209000.0,
-      },
-      {
-        time: "2022-05-17",
-        open: 37209000.0,
-        high: 37209000.0,
-        low: 37219000.0,
-        close: 37209000.0,
-      },
-      {
-        time: "2022-05-18",
-        open: 38933000.0,
-        high: 37209000.0,
-        low: 37109000.0,
-        close: 37209000.0,
-      },
-      {
-        time: "2022-05-19",
-        open: 38933000.0,
-        high: 37209000.0,
-        low: 33209000.0,
-        close: 37209000.0,
-      },
-      {
-        time: "2022-05-20",
-        open: 38933000.0,
-        high: 37209000.0,
-        low: 35209000.0,
-        close: 37209000.0,
-      },
-      {
-        time: "2022-05-21",
-        open: 38933000.0,
-        high: 37209000.0,
-        low: 37209000.0,
-        close: 37209000.0,
-      },
-      {
-        time: "2022-05-22",
-        open: 38933000.0,
-        high: 37209000.0,
-        low: 37209000.0,
-        close: 37209000.0,
-      },
-      {
-        time: "2022-05-23",
-        open: 38933000.0,
-        high: 37209000.0,
-        low: 37209000.0,
-        close: 37209000.0,
-      },
-    ]);
+    console.log(`차트 만듬: ${this.baseName}코인 `);
+    // 차트 생성 함수
+    this.makeChart();
+    // candlestickSeries 주식 차트 생성
+    const candleSeries = this.chart.addCandlestickSeries();
+    // 주식차트 데이터 설정 함수
+    this.setChartData(candleSeries);
 
     // 주식 캔들 균등하게 보이게 하기
-    chart.timeScale().fitContent();
+    this.chart.timeScale().fitContent();
+
+    window.addEventListener("resize", () => {
+      this.chart.applyOptions({
+        width: window.innerWidth - 10,
+      });
+    });
+  },
+
+  // unmount시 웹소켓 연결 해제
+  unmounted() {
+    this.binanceSocket.close();
   },
 };
 </script>
-
-<style lang="scss" scoped>
-.chart {
-  width: 90%;
+<style>
+.chart,
+.tv-lightweight-charts {
+  width: 100% !important;
 }
+/* .tv-lightweight-charts > table {
+  width: 100% !important;
+}
+
+.tv-lightweight-charts > table > td {
+  width: auto !important;
+} */
 </style>
