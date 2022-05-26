@@ -78,11 +78,12 @@ export default {
               close: item[4] * 1261.1, // USDT => KRW
             });
           });
-          // 실시간이 아닌 데이터를 설정
+          // ⭐️ SETDATE
           candleSeries.setData(this.cdata_price);
         });
 
       // 웹소켓 생성
+      // baseName = 코인이름, timeframe = 봉 시간
       this.binanceSocket = new WebSocket(
         `wss://fstream.binance.com/stream?streams=${this.baseName.toLowerCase()}@kline_${
           this.timeframe
@@ -99,10 +100,8 @@ export default {
           if (kline.data.s === this.baseName.toUpperCase()) {
             this.lastBaseKline = kline.data.k;
           }
-          // if (kline.data.s === this.quoteName.toUpperCase()) {
-          //   this.lastQuoteKline = kline.data.k;
-          // }
 
+          // ⭐️ UPDATE
           if (this.lastBaseKline.c !== 0) {
             candleSeries.update({
               time: this.lastBaseKline.t / 1000 + 32400,
@@ -144,6 +143,7 @@ export default {
     // 주식 캔들 균등하게 보이게 하기
     this.chart.timeScale().fitContent();
 
+    // 차트 반응형 너비
     window.addEventListener("resize", () => {
       this.chart.applyOptions({
         width: window.innerWidth - 10,
