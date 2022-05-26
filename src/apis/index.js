@@ -14,7 +14,7 @@ import { setInterceptors } from "@/apis/common/interceptor";
 // 엑시오스 초기화 함수
 const createInstance = () => {
   const instance = axios.create({
-    baseURL: "http://localhost:3004/",
+    baseURL: "",
     timeout: 1000 * 30,
     headers: {
       "Content-Type": "application/json;charset=UTF-8",
@@ -25,6 +25,37 @@ const createInstance = () => {
 
 const instance = createInstance();
 
+// JSON GET
+export const get = (url, params = {}, responseType = "json") => {
+  return new Promise((resolve, reject) => {
+    instance
+      .get(url, {
+        params: params,
+        responseType,
+      })
+      .then((response) => {
+        resolve(response);
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+};
+// JSON POST
+export const post = (url, data = {}) => {
+  return new Promise((resolve, reject) => {
+    instance.post(url, data).then(
+      (response) => {
+        resolve(response.data);
+      },
+      (error) => {
+        reject(error);
+      }
+    );
+  });
+};
+
+// 나중에 변경 예정
 // 회원가입
 export const registerUser = (userdata) => {
   return instance.post("signup", userdata);
