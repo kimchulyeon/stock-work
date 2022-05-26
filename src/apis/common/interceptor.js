@@ -1,6 +1,7 @@
 import store from "@/store/index";
 
 export const setInterceptors = (instance) => {
+  // REQUEST
   instance.interceptors.request.use(
     (config) => {
       // 요청 전에 실행
@@ -14,6 +15,7 @@ export const setInterceptors = (instance) => {
   );
 
   instance.interceptors.response.use(
+    // RESPONSE
     (response) => {
       // Any status code that lie within the range of 2xx cause this function to trigger
       // Do something with response data
