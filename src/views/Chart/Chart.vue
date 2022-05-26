@@ -15,7 +15,7 @@
       <!-- LIGHTWEIGHT 차트 -->
       <!-- @update-price="updatePrice" -->
       <!-- :quote-name="quoteName" -->
-      <LightWeightChart :base-name="baseName" timeframe="1m" :key="baseName" />
+      <LightWeightChart :base-name="baseName" timeframe="15m" :key="baseName" />
       <!-- CHART INFO TABLE -->
       <table>
         <thead>
@@ -62,6 +62,15 @@
         </tbody>
       </table>
     </div>
+    <footer>
+      <ul>
+        <li>홈</li>
+        <li>돈벼락기법</li>
+        <li>돈벼락테마</li>
+        <li>종목검색</li>
+        <li>알림</li>
+      </ul>
+    </footer>
   </div>
 </template>
 
@@ -149,6 +158,28 @@ table {
 
     td {
       padding: 10px;
+    }
+  }
+}
+footer {
+  width: 100%;
+
+  ul {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    list-style: none;
+    border-top: 2px solid grey;
+    padding: 10px 20px;
+    margin-top: 20px;
+
+    li {
+      background-color: rgba(128, 128, 128, 0.783);
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
     }
   }
 }
